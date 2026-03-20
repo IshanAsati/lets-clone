@@ -1,0 +1,71 @@
+# ============================================================
+# Voice Clone Pipeline - Configuration
+# ============================================================
+# Hardware target: RTX 4050 (6GB VRAM), 24GB DDR5 RAM
+# Model: Chatterbox Turbo (GPT-2 based, 350M params)
+# Method: Fine-tuning for accurate voice cloning
+# ============================================================
+
+# --- Project Paths ---
+paths:
+  raw_audio_dir: "data/raw"                   # Place your raw recordings here
+  processed_dir: "data/processed"             # Preprocessed WAV clips
+  dataset_dir: "MyTTSDataset"                 # LJSpeech-format dataset for training
+  model_dir: "pretrained_models"              # Base model + tokenizer
+  output_dir: "chatterbox_output"             # Fine-tuned checkpoints
+  speaker_reference_dir: "speaker_reference"  # Reference audio for inference
+  log_dir: "logs"                             # Processing logs
+  generated_dir: "outputs"                    # Generated audio files
+
+# --- Audio Preprocessing ---
+preprocessing:
+  target_sample_rate: 16000            # Hz (Chatterbox encoder works at 16kHz)
+  output_sample_rate: 24000            # Hz (vocoder output)
+  mono: true
+  normalize: true
+  trim_silence: true
+  silence_threshold_db: -40
+  min_clip_duration: 3.0               # seconds
+  max_clip_duration: 10.0              # seconds (3-10s optimal for Chatterbox)
+  output_format: "wav"
+
+# --- Transcription (Whisper) ---
+transcription:
+  model_size: "base"                   # Options: tiny, base, small
+  language: "en"                       # Set to null for auto-detect
+  device: "cuda"
+  fp16: true
+  beam_size: 3
+
+# --- Model Configuration ---
+model:
+  name: "chatterbox_turbo"             # GPT-2 based, 350M params
+  is_turbo: true                       # true = Turbo (GPT-2), false = Standard (Llama)
+  new_vocab_size: 52260                # Updated by setup.py — DO NOT change manually
+
+# --- Training (Fine-Tuning) ---
+# Optimized for 6GB VRAM RTX 4050
+training:
+  batch_size: 2                        # Keep at 2 for 6GB VRAM (1 if still OOM)
+  grad_accumulation_steps: 16          # Effective batch = 2 * 16 = 32
+  learning_rate: 5.0e-5                # Default from chatterbox-finetuning
+  num_epochs: 60                       # 50-60 is perfect for 15min of audio
+  fp16: true                           # Essential for 6GB VRAM
+  save_every_epoch: true               # Save checkpoint each epoch
+  dataset_format: "ljspeech"           # "ljspeech" or "file_based"
+  preprocess: true                     # Set false after first preprocessing pass
+  num_workers: 2                       # Data loader workers
+
+# --- Recommended training durations ---
+# 30 min audio → 75-100 epochs
+# 1 hour audio → 50-75 epochs (or ~1000 steps)
+# 2+ hours     → 50 epochs usually enough
+
+# --- Inference ---
+inference:
+  reference_audio: "speaker_reference/reference.wav"
+  exaggeration: 0.5                    # Emotion intensity (0.0-1.0)
+  cfg_weight: 0.5                      # Style adherence
+  temperature: 0.8                     # Sampling temperature
+  output_sample_rate: 24000
+  device: "cuda"

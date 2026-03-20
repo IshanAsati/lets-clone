@@ -1,0 +1,36 @@
+# ============================================================
+# Voice Clone Pipeline - Dependencies
+# ============================================================
+# Chatterbox Turbo Fine-Tuning Pipeline
+# Python 3.11 | Windows 11
+# ============================================================
+
+# --- Core ---
+torch>=2.1.0
+torchaudio>=2.1.0
+numpy>=1.24.0
+scipy>=1.11.0
+PyYAML>=6.0
+
+# --- Audio Processing ---
+pydub>=0.25.1
+librosa>=0.10.1
+soundfile>=0.12.1
+ffmpeg-python>=0.2.0
+
+# --- Whisper Transcription ---
+faster-whisper>=1.0.0
+
+# --- Chatterbox TTS (base model for fine-tuning) ---
+chatterbox-tts>=0.1.0
+
+# --- Training Dependencies ---
+safetensors>=0.4.0
+tokenizers>=0.15.0
+transformers>=4.36.0
+accelerate>=0.25.0
+
+# --- Utilities ---
+tqdm>=4.66.0
+pandas>=2.1.0
+rich>=13.7.0
